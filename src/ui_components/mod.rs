@@ -6,6 +6,7 @@ use self::{
     header::HeaderPlugin, scrolling_list::ScrollingListPlugin, story::StoryComponentPlugin,
 };
 
+pub mod comment;
 pub mod header;
 pub mod primitives;
 pub mod scrolling_list;

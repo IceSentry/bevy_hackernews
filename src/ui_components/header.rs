@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use super::primitives::{button_with_component, text_section};
-use crate::{spawn_get_stories_async, theme::*};
+use crate::{spawn_get_stories_async, theme::*, SelectedStory};
 
 pub struct HeaderPlugin;
 impl Plugin for HeaderPlugin {
@@ -39,6 +39,7 @@ fn on_interaction_header(
         (&Interaction, &HeaderButton, &mut UiColor),
         (Changed<Interaction>, With<Button>),
     >,
+    mut selected_story: ResMut<SelectedStory>,
 ) {
     for (interaction, HeaderButton { value }, mut color) in &mut query {
         match interaction {
@@ -46,6 +47,7 @@ fn on_interaction_header(
                 info!("Header clicked {value}");
                 *color = Color::BLACK.into();
                 spawn_get_stories_async(&mut commands, value.clone());
+                selected_story.0 = None;
             }
             Interaction::Hovered => {
                 *color = BG_ORANGE_700.into();

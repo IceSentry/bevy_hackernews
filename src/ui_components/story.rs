@@ -1,7 +1,14 @@
 use bevy::prelude::*;
 
-use super::primitives::{button_with_component, div_with_style, text};
-use crate::{api::HackerNewsStory, utils::num_as_f32};
+use super::primitives::{
+    button_with_component, div_with_style, text, text_section, text_sections,
+    text_sections_with_style, text_with_style,
+};
+use crate::{
+    api::{get_story_comments, HackerNewsStory},
+    utils::num_as_f32,
+    SelectedStory,
+};
 
 pub struct StoryComponentPlugin;
 impl Plugin for StoryComponentPlugin {
@@ -52,7 +59,7 @@ pub fn story(
                 },
                 ..default()
             };
-            text(c, &style, dark_style, &format!("{index}."));
+            text_with_style(c, &style, dark_style, &format!("{}.", index + 1));
         });
 
         // title and meta
@@ -66,14 +73,18 @@ pub fn story(
                 align_items: AlignItems::Center,
                 ..Default::default()
             };
+
             div_with_style(c, &style, |c| {
-                c.spawn_bundle(TextBundle::from_sections([
-                    TextSection::new(&story.title, title_style.clone()),
-                    TextSection::new(
-                        &format!(" ({})", story.domain.as_ref().unwrap_or(&String::from(""))),
-                        dark_style.clone(),
-                    ),
-                ]));
+                text_sections(
+                    c,
+                    [
+                        (title_style.clone(), story.title.to_string()),
+                        (
+                            dark_style.clone(),
+                            format!(" ({})", story.domain.as_ref().unwrap_or(&String::from(""))),
+                        ),
+                    ],
+                );
             });
 
             // meta
@@ -87,7 +98,7 @@ pub fn story(
                 story.user.as_ref().unwrap_or(&String::from("undefined")),
                 story.comments_count.as_f64().unwrap_or(0.0),
             );
-            text(c, &style, dark_style, &meta);
+            text_with_style(c, &style, dark_style, &meta);
         });
     });
 }
@@ -97,11 +108,14 @@ fn on_interaction_story(
         (&Interaction, &StoryButton, &mut UiColor),
         (Changed<Interaction>, With<Button>),
     >,
+    mut selected_story: ResMut<SelectedStory>,
 ) {
     for (interaction, StoryButton { id }, mut color) in &mut query {
         match interaction {
             Interaction::Clicked => {
-                info!("story {id} clicked")
+                info!("story {id} clicked");
+                let comments = get_story_comments(&id.to_string()).expect("failed to get comments");
+                selected_story.0 = Some(comments);
             }
             Interaction::Hovered => {
                 *color = Color::rgba(0.0, 0.0, 0.0, 0.25).into();

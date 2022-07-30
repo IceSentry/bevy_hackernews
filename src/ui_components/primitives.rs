@@ -86,7 +86,16 @@ pub fn button_impl(
     .id()
 }
 
-pub fn text(c: &mut ChildBuilder, style: &Style, text_style: &TextStyle, text: impl Into<String>) {
+pub fn text(c: &mut ChildBuilder, text_style: &TextStyle, text: impl Into<String>) {
+    text_with_style(c, &Style::default(), text_style, text)
+}
+
+pub fn text_with_style(
+    c: &mut ChildBuilder,
+    style: &Style,
+    text_style: &TextStyle,
+    text: impl Into<String>,
+) {
     div_with_style(c, style, |c| {
         text_section(c, text_style, text);
     });
@@ -96,6 +105,37 @@ pub fn text_section(c: &mut ChildBuilder, text_style: &TextStyle, text: impl Int
     c.spawn_bundle(TextBundle::from_section(text, text_style.clone()));
 }
 
-pub fn text_sections(c: &mut ChildBuilder, sections: impl IntoIterator<Item = TextSection>) {
-    c.spawn_bundle(TextBundle::from_sections(sections));
+pub fn text_section_with_style(
+    c: &mut ChildBuilder,
+    style: &Style,
+    text_style: &TextStyle,
+    text: impl Into<String>,
+) {
+    c.spawn_bundle(TextBundle::from_section(text, text_style.clone()).with_style(style.clone()));
+}
+
+pub fn text_sections(
+    c: &mut ChildBuilder,
+    sections: impl IntoIterator<Item = (TextStyle, String)>,
+) {
+    c.spawn_bundle(TextBundle::from_sections(
+        sections
+            .into_iter()
+            .map(|(style, value)| TextSection::new(value, style)),
+    ));
+}
+
+pub fn text_sections_with_style(
+    c: &mut ChildBuilder,
+    style: &Style,
+    sections: impl IntoIterator<Item = (TextStyle, String)>,
+) {
+    c.spawn_bundle(
+        TextBundle::from_sections(
+            sections
+                .into_iter()
+                .map(|(style, value)| TextSection::new(value, style)),
+        )
+        .with_style(style.clone()),
+    );
 }

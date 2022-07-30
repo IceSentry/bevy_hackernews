@@ -17,10 +17,15 @@ One other thing I did to keep things concise is to use `c` for `ChildBuilder` pa
 - `with_style`: The primitives using this vairant will let you pass a `Style` component to configure the style.
 - `with_component`: The primitives using this variant will let you pass a `Component` to the constructor. This is useful when you need to query that node in a separate system.
 
-## TODO
+## Things I would like to explore
 
 - `style!` macro:
   - The biggest source of verbosity right now is declaring a `Style` because it forces every parameter on a new line *and* it pretty much always has a `..Default::default()` since you almost never change all the values.
 - Create macros for the primitives:
   - Since rust doesn't have variadic arguments, I can't have multiple `div()` so I need a bunch of verbose overload. having a `div!` macro would fix the majority of the verbosity.
-- Consider a `h!(Component, Option<Props>, Option<Children>)` macro
+- Consider a `h!(Component, Option<Props>, Option<Children>)` macro. I'm not sure how possible that would be.
+  - The main issue I had was to try to keep a `impl Component` temporarily to insert it later, but if I provide some predefined components for the primitives it should be possible to just always insert a component.
+
+## Notes
+
+I recommend using `cargo watch -c -w src -x run` to develop.

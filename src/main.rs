@@ -1,6 +1,6 @@
 #![allow(clippy::type_complexity)]
 
-use api::{get_stories, HackerNewsStory};
+use api::{get_stories, HackerNewsStory, HackerNewsStoryWithComments};
 use bevy::{
     prelude::*,
     tasks::{AsyncComputeTaskPool, Task},
@@ -10,8 +10,9 @@ use futures_lite::future;
 
 use theme::*;
 use ui_components::{
+    comment::comment,
     header::header,
-    primitives::{div, text},
+    primitives::{div, text_with_style},
     scrolling_list::scrolling_list,
     story::story,
     UiComponentsPlugin,
@@ -32,15 +33,19 @@ struct Stories {
     data: Vec<HackerNewsStory>,
 }
 
+struct SelectedStory(Option<HackerNewsStoryWithComments>);
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(UiComponentsPlugin)
         .insert_resource(Stories { data: vec![] })
+        .insert_resource(SelectedStory(None))
         .add_startup_system(setup)
         .add_startup_system(get_stories_async)
         .add_system(handle_get_stories)
         .add_system(handle_stories_changed)
+        .add_system(handle_comments)
         .run();
 }
 
@@ -60,53 +65,55 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
         .insert(UiRoot)
         .with_children(|c| {
-            //header
-            c.spawn_bundle(NodeBundle {
-                style: Style {
-                    justify_content: JustifyContent::SpaceBetween,
-                    ..Default::default()
-                },
-                color: BG_ORANGE_600.into(),
-                ..Default::default()
-            })
-            .with_children(|c| {
-                // nav
-                div(c, |c| {
-                    let text_style = TextStyle {
-                        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                        font_size: 24.0,
-                        color: Color::WHITE,
-                    };
-
-                    header(c, &text_style, "news", "Hacker News");
-                    header(c, &text_style, "newest", "Newest");
-                    header(c, &text_style, "show", "Show");
-                    header(c, &text_style, "ask", "Ask");
-                    header(c, &text_style, "jobs", "Jobs");
-                });
-
-                let style = Style {
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    padding: UiRect {
-                        left: Val::Px(10.),
-                        right: Val::Px(10.),
-                        ..Default::default()
-                    },
-                    size: Size::new(Val::Auto, Val::Px(50.)),
-                    ..Default::default()
-                };
-                let text_style = TextStyle {
-                    font: asset_server.load("fonts/FiraMono-Medium.ttf"),
-                    font_size: 24.0,
-                    color: Color::WHITE,
-                };
-                text(c, &style, &text_style, "made with Bevy");
-            });
-
+            spawn_nav(c, asset_server);
             //stories root
             scrolling_list(c, StoriesRootNode);
         });
+}
+
+fn spawn_nav(c: &mut ChildBuilder, asset_server: Res<AssetServer>) {
+    c.spawn_bundle(NodeBundle {
+        style: Style {
+            justify_content: JustifyContent::SpaceBetween,
+            ..default()
+        },
+        color: BG_ORANGE_600.into(),
+        ..default()
+    })
+    .with_children(|c| {
+        // nav
+        div(c, |c| {
+            let text_style = TextStyle {
+                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                font_size: 24.0,
+                color: Color::WHITE,
+            };
+
+            header(c, &text_style, "news", "Hacker News");
+            header(c, &text_style, "newest", "Newest");
+            header(c, &text_style, "show", "Show");
+            header(c, &text_style, "ask", "Ask");
+            header(c, &text_style, "jobs", "Jobs");
+        });
+
+        let style = Style {
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            padding: UiRect {
+                left: Val::Px(10.),
+                right: Val::Px(10.),
+                ..default()
+            },
+            size: Size::new(Val::Auto, Val::Px(50.)),
+            ..default()
+        };
+        let text_style = TextStyle {
+            font: asset_server.load("fonts/FiraMono-Medium.ttf"),
+            font_size: 24.0,
+            color: Color::WHITE,
+        };
+        text_with_style(c, &style, &text_style, "made with Bevy");
+    });
 }
 
 #[derive(Component)]
@@ -173,4 +180,35 @@ fn handle_stories_changed(
             story(c, &title_style, &dark_style, i, hn_story);
         }
     });
+}
+
+fn handle_comments(
+    mut commands: Commands,
+    selected_story: Res<SelectedStory>,
+    stories_root: Query<Entity, With<StoriesRootNode>>,
+    asset_server: Res<AssetServer>,
+) {
+    if !selected_story.is_changed() {
+        return;
+    }
+
+    if let Some(story) = &selected_story.0 {
+        commands.entity(stories_root.single()).despawn_descendants();
+        commands.entity(stories_root.single()).with_children(|c| {
+            let text_style = TextStyle {
+                font: asset_server.load("fonts/FiraMono-Medium.ttf"),
+                font_size: 16.0,
+                color: Color::WHITE,
+            };
+            let meta_style = TextStyle {
+                font: asset_server.load("fonts/FiraMono-Medium.ttf"),
+                font_size: 14.0,
+                color: Color::BLACK,
+            };
+
+            for hn_comment in &story.comments {
+                comment(c, &text_style, &meta_style, hn_comment);
+            }
+        });
+    }
 }
