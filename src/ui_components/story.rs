@@ -1,11 +1,9 @@
 use bevy::prelude::*;
 
+use super::primitives::{button_with_component, div_with_style, text};
 use crate::{api::HackerNewsStory, utils::num_as_f32};
 
-use super::primitives::{button_with_component, div_with_style, text};
-
 pub struct StoryComponentPlugin;
-
 impl Plugin for StoryComponentPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(on_interaction_story);

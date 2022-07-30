@@ -1,3 +1,5 @@
+//! A scrolling list component. This is take verbatim from bevy's ui example.
+
 use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
     prelude::*,
@@ -6,7 +8,6 @@ use bevy::{
 use super::primitives::div_with_style;
 
 pub struct ScrollingListPlugin;
-
 impl Plugin for ScrollingListPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(on_mouse_scroll);
