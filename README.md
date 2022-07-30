@@ -23,3 +23,4 @@ One other thing I did to keep things concise is to use `c` for `ChildBuilder` pa
   - The biggest source of verbosity right now is declaring a `Style` because it forces every parameter on a new line *and* it pretty much always has a `..Default::default()` since you almost never change all the values.
 - Create macros for the primitives:
   - Since rust doesn't have variadic arguments, I can't have multiple `div()` so I need a bunch of verbose overload. having a `div!` macro would fix the majority of the verbosity.
+- Consider a `h!(Component, Option<Props>, Option<Children>)` macro
