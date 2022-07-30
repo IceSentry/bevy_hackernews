@@ -10,7 +10,11 @@ use futures_lite::future;
 
 use theme::*;
 use ui_components::{
-    div, header::header, scrolling_list::scrolling_list, story::story, text, UiComponentsPlugin,
+    header::header,
+    primitives::{div, text},
+    scrolling_list::scrolling_list,
+    story::story,
+    UiComponentsPlugin,
 };
 
 mod api;

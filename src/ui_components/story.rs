@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{api::HackerNewsStory, utils::num_as_f32};
 
-use super::{button_with_component, div, div_with_style, text};
+use super::primitives::{button_with_component, div_with_style, text};
 
 pub struct StoryComponentPlugin;
 

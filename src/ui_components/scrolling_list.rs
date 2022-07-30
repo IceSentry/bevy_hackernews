@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
 };
 
-use super::div_with_style;
+use super::primitives::div_with_style;
 
 pub struct ScrollingListPlugin;
 

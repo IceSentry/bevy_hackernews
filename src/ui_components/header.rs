@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 
-use super::{button_with_component, text_section};
 use crate::{spawn_get_stories_async, theme::*};
+
+use super::primitives::{button_with_component, text_section};
 
 pub struct HeaderPlugin;
 impl Plugin for HeaderPlugin {
