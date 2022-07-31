@@ -44,6 +44,24 @@ pub fn div_impl(
     .id()
 }
 
+pub fn div_with_component(
+    c: &mut ChildBuilder,
+    color: Option<Color>,
+    style: Option<Style>,
+    component: impl Component,
+    f: impl FnOnce(&mut ChildBuilder),
+) -> Entity {
+    c.spawn_bundle(NodeBundle {
+        color: color.unwrap_or(Color::NONE).into(),
+        style: style.unwrap_or_default(),
+        focus_policy: FocusPolicy::Pass,
+        ..Default::default()
+    })
+    .insert(component)
+    .with_children(f)
+    .id()
+}
+
 pub fn button(c: &mut ChildBuilder, style: &Style, f: impl FnOnce(&mut ChildBuilder)) -> Entity {
     button_impl(c, Some(style.clone()), None, EmptyComponent, f)
 }

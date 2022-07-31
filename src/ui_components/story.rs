@@ -1,9 +1,6 @@
 use bevy::prelude::*;
 
-use super::primitives::{
-    button_with_component, div_with_style, text, text_section, text_sections,
-    text_sections_with_style, text_with_style,
-};
+use super::primitives::{button_with_component, div_with_style, text_sections, text_with_style};
 use crate::{
     api::{get_story_comments, HackerNewsStory},
     utils::num_as_f32,

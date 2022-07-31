@@ -29,3 +29,8 @@ One other thing I did to keep things concise is to use `c` for `ChildBuilder` pa
 ## Notes
 
 I recommend using `cargo watch -c -w src -x run` to develop.
+
+To upstream:
+
+- `NodeBundle::transparent()` create a constructor for node without styles or color and focus_policy pass
+- `NodeBundle::with_style()` like `TextBundle::with_style`

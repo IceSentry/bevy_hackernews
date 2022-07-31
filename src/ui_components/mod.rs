@@ -1,6 +1,4 @@
-#![allow(unused)]
-
-use bevy::{prelude::*, ui::FocusPolicy};
+use bevy::prelude::*;
 
 use self::{
     header::HeaderPlugin, scrolling_list::ScrollingListPlugin, story::StoryComponentPlugin,
@@ -8,6 +6,7 @@ use self::{
 
 pub mod comment;
 pub mod header;
+#[allow(unused)]
 pub mod primitives;
 pub mod scrolling_list;
 pub mod story;

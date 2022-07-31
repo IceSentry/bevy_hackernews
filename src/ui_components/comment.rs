@@ -1,9 +1,7 @@
 use bevy::prelude::*;
 
-use super::primitives::{
-    button_with_component, div, div_with_style, text_section, text_section_with_style,
-};
-use crate::{api::HackerNewsComment, spawn_get_stories_async, theme::*, SelectedStory};
+use super::primitives::{div, div_with_style, text_section, text_section_with_style};
+use crate::api::HackerNewsComment;
 
 pub fn comment(
     c: &mut ChildBuilder,
