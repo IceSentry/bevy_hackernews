@@ -11,10 +11,13 @@ use super::primitives::div_with_style;
 pub struct ScrollingListPlugin;
 impl Plugin for ScrollingListPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(on_mouse_scroll)
-            .add_system(on_children_update)
-            .add_system(sync_positions)
-            .add_system(on_resize);
+        app.add_system_set(
+            SystemSet::new()
+                .with_system(on_mouse_scroll)
+                .with_system(on_children_update)
+                .with_system(on_resize),
+        )
+        .add_system_to_stage(CoreStage::PostUpdate, sync_positions);
     }
 }
 
@@ -65,7 +68,7 @@ pub fn scrolling_list(c: &mut ChildBuilder, tag: impl Component) {
     });
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct ScrollingList {
     position: f32,
     indicator_position: f32,
@@ -89,8 +92,8 @@ fn on_mouse_scroll(
             let (indicator_height, remaining_space, max_scroll, jump) =
                 compute_values(items_height, uinode.size.y);
 
-            list.position = (list.position + dy * jump).clamp(-max_scroll, 0.);
-            // scrolling_list.position = scrolling_list.position.clamp(-max_scroll, 0.);
+            list.position += dy * jump;
+            list.position = list.position.clamp(-max_scroll, 0.);
 
             list.indicator_position -= dy;
             list.indicator_position = list.indicator_position.clamp(0., remaining_space);
@@ -102,7 +105,7 @@ fn on_mouse_scroll(
 fn on_children_update(
     mut query_list: Query<
         (&mut ScrollingList, &Children, &Node),
-        (Without<Indicator>, Changed<Children>),
+        (Without<Indicator>, Or<(Changed<Children>, Changed<Node>)>),
     >,
     query_item: Query<&Node>,
 ) {
@@ -110,9 +113,11 @@ fn on_children_update(
         info!("children changed");
         let items_height = compute_children_height(children, &query_item);
         let (indicator_height, _, _, _) = compute_values(items_height, uinode.size.y);
+        if items_height < uinode.size.y {
+            list.position = 0.;
+            list.indicator_position = 0.;
+        }
 
-        list.position = 0.;
-        list.indicator_position = 0.;
         list.indicator_height = indicator_height;
     }
 }
@@ -123,13 +128,12 @@ fn on_resize(
     resize_events: EventReader<WindowResized>,
 ) {
     if !resize_events.is_empty() {
-        info!("resize");
         for (mut list, children, uinode) in &mut query_list {
             let items_height = compute_children_height(children, &query_item);
             let (indicator_height, _, _, _) = compute_values(items_height, uinode.size.y);
-            info!("resize 2");
-            // list.position = 0.;
-            // list.indicator_position = 0.;
+
+            // It seems like the children only update their size 1 frrame aftre the resize
+            // So this doesn't do anything
             list.indicator_height = indicator_height;
         }
     }
@@ -163,6 +167,9 @@ fn compute_values(items_height: f32, panel_height: f32) -> (f32, f32, f32, f32) 
     let indicator_height = panel_height * ratio;
     let remaining_space = panel_height - indicator_height;
     let max_scroll = (items_height - panel_height).max(0.);
-    let jump = max_scroll / remaining_space;
+    let mut jump = max_scroll / remaining_space;
+    if jump.is_nan() {
+        jump = 0.;
+    }
     (indicator_height, remaining_space, max_scroll, jump)
 }

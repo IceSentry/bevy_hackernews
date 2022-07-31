@@ -34,3 +34,4 @@ To upstream:
 
 - `NodeBundle::transparent()` create a constructor for node without styles or color and focus_policy pass
 - `NodeBundle::with_style()` like `TextBundle::with_style`
+- `ScrollList` could probably be added as a primitive
