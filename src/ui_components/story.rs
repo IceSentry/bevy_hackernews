@@ -41,33 +41,22 @@ pub fn story(
         id: story.id.as_f64().unwrap(),
     };
     button_with_tag(c, &btn_style, tag, |c| {
-        //index
-        container(
+        text(
             c,
-            None,
             Some(Style {
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::FlexEnd,
+                margin: UiRect {
+                    left: Val::Px(10.),
+                    right: Val::Px(10.),
+                    ..default()
+                },
                 ..default()
             }),
-            |c| {
-                text(
-                    c,
-                    Some(Style {
-                        margin: UiRect {
-                            left: Val::Px(10.),
-                            right: Val::Px(10.),
-                            ..default()
-                        },
-                        ..default()
-                    }),
-                    dark_style,
-                    &format!("{}.", index + 1),
-                );
-            },
+            dark_style,
+            &format!("{}.", index + 1),
         );
 
-        // title and meta
         container(
             c,
             None,
@@ -76,50 +65,57 @@ pub fn story(
                 ..default()
             }),
             |c| {
-                // title
-                container(
-                    c,
-                    None,
-                    Some(Style {
-                        align_items: AlignItems::Center,
-                        ..default()
-                    }),
-                    |c| {
-                        text_sections(
-                            c,
-                            None,
-                            [
-                                (title_style.clone(), story.title.to_string()),
-                                (
-                                    dark_style.clone(),
-                                    format!(
-                                        " ({})",
-                                        story.domain.as_ref().unwrap_or(&String::from(""))
-                                    ),
-                                ),
-                            ],
-                        );
-                    },
-                );
-
-                // meta
-                text(
-                    c,
-                    Some(Style {
-                        align_items: AlignItems::Center,
-                        ..default()
-                    }),
-                    dark_style,
-                    &format!(
-                        "{} points by {} | {} comments",
-                        num_as_f32(&story.points),
-                        story.user.as_ref().unwrap_or(&String::from("undefined")),
-                        story.comments_count.as_f64().unwrap_or(0.0),
-                    ),
-                );
+                title(c, title_style, dark_style, story);
+                meta(c, dark_style, story);
             },
         );
     });
+}
+
+fn meta(c: &mut ChildBuilder, dark_style: &TextStyle, story: &HackerNewsStory) {
+    text(
+        c,
+        Some(Style {
+            align_items: AlignItems::Center,
+            ..default()
+        }),
+        dark_style,
+        &format!(
+            "{} points by {} | {} comments",
+            num_as_f32(&story.points),
+            story.user.as_ref().unwrap_or(&String::from("undefined")),
+            story.comments_count.as_f64().unwrap_or(0.0),
+        ),
+    );
+}
+
+fn title(
+    c: &mut ChildBuilder,
+    title_style: &TextStyle,
+    dark_style: &TextStyle,
+    story: &HackerNewsStory,
+) {
+    container(
+        c,
+        None,
+        Some(Style {
+            align_items: AlignItems::Center,
+            ..default()
+        }),
+        |c| {
+            text_sections(
+                c,
+                None,
+                [
+                    (title_style.clone(), story.title.to_string()),
+                    (
+                        dark_style.clone(),
+                        format!(" ({})", story.domain.as_ref().unwrap_or(&String::from(""))),
+                    ),
+                ],
+            );
+        },
+    );
 }
 
 fn on_interaction_story(

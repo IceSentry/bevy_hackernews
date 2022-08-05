@@ -21,23 +21,26 @@ pub fn header(
     value: &str,
     text_content: &str,
 ) -> Entity {
-    let header_style = Style {
-        justify_content: JustifyContent::Center,
-        align_items: AlignItems::Center,
-        padding: UiRect {
-            left: Val::Px(10.),
-            right: Val::Px(10.),
+    button_with_tag(
+        c,
+        &Style {
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            padding: UiRect {
+                left: Val::Px(10.),
+                right: Val::Px(10.),
+                ..Default::default()
+            },
+            size: Size::new(Val::Auto, Val::Px(50.)),
             ..Default::default()
         },
-        size: Size::new(Val::Auto, Val::Px(50.)),
-        ..Default::default()
-    };
-    let tag = HeaderButton {
-        value: value.to_string(),
-    };
-    button_with_tag(c, &header_style, tag, |c| {
-        text(c, None, text_style, text_content);
-    })
+        HeaderButton {
+            value: value.to_string(),
+        },
+        |c| {
+            text(c, None, text_style, text_content);
+        },
+    )
 }
 
 fn on_interaction_header(

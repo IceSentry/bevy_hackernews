@@ -9,43 +9,46 @@ pub fn comment(
     meta_style: &TextStyle,
     hn_comment: &HackerNewsComment,
 ) {
-    let style = Style {
-        flex_direction: FlexDirection::ColumnReverse,
-        flex_shrink: 0.,
-        margin: UiRect {
-            left: Val::Px(15.),
-            top: Val::Px(5.),
-            bottom: Val::Px(5.),
-            ..default()
-        },
-        ..default()
-    };
-    container(c, None, Some(style), |c| {
-        meta(c, meta_style, hn_comment);
-
-        content(c, text_style, hn_comment);
-
-        // sub comments
-        container(
-            c,
-            None,
-            Some(Style {
-                flex_direction: FlexDirection::ColumnReverse,
-                ..Default::default()
-            }),
-            |c| {
-                for sub_comment in &hn_comment.comments {
-                    comment(c, text_style, meta_style, sub_comment);
-                }
-            },
-        );
-    });
-}
-
-fn meta(c: &mut ChildBuilder, meta_style: &TextStyle, hn_comment: &HackerNewsComment) {
     container(
         c,
         None,
+        Some(Style {
+            flex_direction: FlexDirection::ColumnReverse,
+            flex_shrink: 0.,
+            margin: UiRect {
+                left: Val::Px(15.),
+                top: Val::Px(5.),
+                bottom: Val::Px(5.),
+                ..default()
+            },
+            ..default()
+        }),
+        |c| {
+            meta(c, meta_style, hn_comment);
+
+            content(c, text_style, hn_comment);
+
+            // sub comments
+            container(
+                c,
+                None,
+                Some(Style {
+                    flex_direction: FlexDirection::ColumnReverse,
+                    ..Default::default()
+                }),
+                |c| {
+                    for sub_comment in &hn_comment.comments {
+                        comment(c, text_style, meta_style, sub_comment);
+                    }
+                },
+            );
+        },
+    );
+}
+
+fn meta(c: &mut ChildBuilder, meta_style: &TextStyle, hn_comment: &HackerNewsComment) {
+    text(
+        c,
         Some(Style {
             // size: Size::new(Val::Undefined, Val::Px(24.)),
             // flex_shrink: 0.,
@@ -57,18 +60,12 @@ fn meta(c: &mut ChildBuilder, meta_style: &TextStyle, hn_comment: &HackerNewsCom
             },
             ..default()
         }),
-        |c| {
-            text(
-                c,
-                None,
-                meta_style,
-                format!(
-                    "{} {}",
-                    hn_comment.user.as_ref().unwrap_or(&String::from("")),
-                    hn_comment.time_ago
-                ),
-            );
-        },
+        meta_style,
+        format!(
+            "{} {}",
+            hn_comment.user.as_ref().unwrap_or(&String::from("")),
+            hn_comment.time_ago
+        ),
     );
 }
 

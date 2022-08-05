@@ -65,13 +65,13 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
         .insert(UiRoot)
         .with_children(|c| {
-            spawn_nav(c, asset_server);
+            nav(c, asset_server);
             //stories root
             scrolling_list(c, StoriesRootNode);
         });
 }
 
-fn spawn_nav(c: &mut ChildBuilder, asset_server: Res<AssetServer>) {
+fn nav(c: &mut ChildBuilder, asset_server: Res<AssetServer>) {
     container(
         c,
         Some(BG_ORANGE_600),
@@ -80,7 +80,6 @@ fn spawn_nav(c: &mut ChildBuilder, asset_server: Res<AssetServer>) {
             ..default()
         }),
         |c| {
-            // nav
             container(c, None, None, |c| {
                 let text_style = TextStyle {
                     font: asset_server.load("fonts/FiraSans-Bold.ttf"),
