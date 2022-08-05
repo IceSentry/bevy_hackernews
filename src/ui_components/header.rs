@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::primitives::{button_with_component, text_section};
+use super::primitives::{button_with_tag, text};
 use crate::{spawn_get_stories_async, theme::*, SelectedStory};
 
 pub struct HeaderPlugin;
@@ -15,7 +15,12 @@ struct HeaderButton {
     value: String,
 }
 
-pub fn header(c: &mut ChildBuilder, text_style: &TextStyle, value: &str, text: &str) -> Entity {
+pub fn header(
+    c: &mut ChildBuilder,
+    text_style: &TextStyle,
+    value: &str,
+    text_content: &str,
+) -> Entity {
     let header_style = Style {
         justify_content: JustifyContent::Center,
         align_items: AlignItems::Center,
@@ -30,7 +35,9 @@ pub fn header(c: &mut ChildBuilder, text_style: &TextStyle, value: &str, text: &
     let tag = HeaderButton {
         value: value.to_string(),
     };
-    button_with_component(c, &header_style, tag, |c| text_section(c, text_style, text))
+    button_with_tag(c, &header_style, tag, |c| {
+        text(c, None, text_style, text_content);
+    })
 }
 
 fn on_interaction_header(

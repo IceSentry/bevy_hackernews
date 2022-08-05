@@ -6,7 +6,7 @@ use bevy::{
     window::WindowResized,
 };
 
-use super::primitives::div_with_style;
+use super::primitives::{container, container_with_tag};
 
 pub struct ScrollingListPlugin;
 impl Plugin for ScrollingListPlugin {
@@ -25,47 +25,50 @@ impl Plugin for ScrollingListPlugin {
 struct Indicator;
 
 pub fn scrolling_list(c: &mut ChildBuilder, tag: impl Component) {
-    let style = Style {
-        size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-        flex_direction: FlexDirection::ColumnReverse,
-        overflow: Overflow::Hidden,
-        ..default()
-    };
-    let indicator_style = Style {
-        position_type: PositionType::Absolute,
-        size: Size::new(Val::Px(10.), Val::Px(50.)),
-        position: UiRect {
-            top: Val::Px(0.),
-            right: Val::Px(0.),
+    container(
+        c,
+        None,
+        Some(Style {
+            size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+            flex_direction: FlexDirection::ColumnReverse,
+            overflow: Overflow::Hidden,
             ..default()
-        },
-        ..default()
-    };
-    div_with_style(c, &style, |c| {
-        let indicator_entity = c
-            .spawn_bundle(NodeBundle {
-                style: indicator_style,
+        }),
+        |c| {
+            let indicator = container_with_tag(
+                c,
+                Some(Color::GRAY),
+                Some(Style {
+                    position_type: PositionType::Absolute,
+                    size: Size::new(Val::Px(10.), Val::Px(50.)),
+                    position: UiRect {
+                        top: Val::Px(0.),
+                        right: Val::Px(0.),
+                        ..default()
+                    },
+                    ..default()
+                }),
+                Indicator,
+                |_| {},
+            );
+
+            c.spawn_bundle(NodeBundle {
+                style: Style {
+                    flex_direction: FlexDirection::ColumnReverse,
+                    ..default()
+                },
+                color: Color::NONE.into(),
                 ..default()
             })
-            .insert(Indicator)
-            .id();
-
-        c.spawn_bundle(NodeBundle {
-            style: Style {
-                flex_direction: FlexDirection::ColumnReverse,
-                ..default()
-            },
-            color: Color::NONE.into(),
-            ..default()
-        })
-        .insert(ScrollingList {
-            indicator_entity,
-            position: 0.0,
-            indicator_position: 0.0,
-            indicator_height: 0.0,
-        })
-        .insert(tag);
-    });
+            .insert(ScrollingList {
+                indicator_entity: indicator,
+                position: 0.0,
+                indicator_position: 0.0,
+                indicator_height: 0.0,
+            })
+            .insert(tag);
+        },
+    );
 }
 
 #[derive(Component, Debug)]
@@ -110,7 +113,6 @@ fn on_children_update(
     query_item: Query<&Node>,
 ) {
     for (mut list, children, uinode) in &mut query_list {
-        info!("children changed");
         let items_height = compute_children_height(children, &query_item);
         let (indicator_height, _, _, _) = compute_values(items_height, uinode.size.y);
         if items_height < uinode.size.y {

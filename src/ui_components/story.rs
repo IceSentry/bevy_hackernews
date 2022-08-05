@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::primitives::{button_with_component, div_with_style, text_sections, text_with_style};
+use super::primitives::{button_with_tag, container, text, text_sections};
 use crate::{
     api::{get_story_comments, HackerNewsStory},
     utils::num_as_f32,
@@ -34,69 +34,91 @@ pub fn story(
             bottom: Val::Px(5.),
             ..default()
         },
-        ..Default::default()
+        ..default()
     };
 
     let tag = StoryButton {
         id: story.id.as_f64().unwrap(),
     };
-    button_with_component(c, &btn_style, tag, |c| {
-        let style = Style {
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::FlexEnd,
-            ..Default::default()
-        };
+    button_with_tag(c, &btn_style, tag, |c| {
         //index
-        div_with_style(c, &style, |c| {
-            let style = Style {
-                margin: UiRect {
-                    left: Val::Px(10.),
-                    right: Val::Px(10.),
-                    ..Default::default()
-                },
+        container(
+            c,
+            None,
+            Some(Style {
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::FlexEnd,
                 ..default()
-            };
-            text_with_style(c, &style, dark_style, &format!("{}.", index + 1));
-        });
+            }),
+            |c| {
+                text(
+                    c,
+                    Some(Style {
+                        margin: UiRect {
+                            left: Val::Px(10.),
+                            right: Val::Px(10.),
+                            ..default()
+                        },
+                        ..default()
+                    }),
+                    dark_style,
+                    &format!("{}.", index + 1),
+                );
+            },
+        );
 
         // title and meta
-        let style = Style {
-            flex_direction: FlexDirection::ColumnReverse,
-            ..Default::default()
-        };
-        div_with_style(c, &style, |c| {
-            // title
-            let style = Style {
-                align_items: AlignItems::Center,
-                ..Default::default()
-            };
-
-            div_with_style(c, &style, |c| {
-                text_sections(
+        container(
+            c,
+            None,
+            Some(Style {
+                flex_direction: FlexDirection::ColumnReverse,
+                ..default()
+            }),
+            |c| {
+                // title
+                container(
                     c,
-                    [
-                        (title_style.clone(), story.title.to_string()),
-                        (
-                            dark_style.clone(),
-                            format!(" ({})", story.domain.as_ref().unwrap_or(&String::from(""))),
-                        ),
-                    ],
+                    None,
+                    Some(Style {
+                        align_items: AlignItems::Center,
+                        ..default()
+                    }),
+                    |c| {
+                        text_sections(
+                            c,
+                            None,
+                            [
+                                (title_style.clone(), story.title.to_string()),
+                                (
+                                    dark_style.clone(),
+                                    format!(
+                                        " ({})",
+                                        story.domain.as_ref().unwrap_or(&String::from(""))
+                                    ),
+                                ),
+                            ],
+                        );
+                    },
                 );
-            });
 
-            // meta
-            let style = Style {
-                align_items: AlignItems::Center,
-                ..Default::default()
-            };
-            let meta = format!(
-                "{} points by {} | {} comments",
-                num_as_f32(&story.points),
-                story.user.as_ref().unwrap_or(&String::from("undefined")),
-                story.comments_count.as_f64().unwrap_or(0.0),
-            );
-            text_with_style(c, &style, dark_style, &meta);
-        });
+                // meta
+                text(
+                    c,
+                    Some(Style {
+                        align_items: AlignItems::Center,
+                        ..default()
+                    }),
+                    dark_style,
+                    &format!(
+                        "{} points by {} | {} comments",
+                        num_as_f32(&story.points),
+                        story.user.as_ref().unwrap_or(&String::from("undefined")),
+                        story.comments_count.as_f64().unwrap_or(0.0),
+                    ),
+                );
+            },
+        );
     });
 }
 

@@ -7,28 +7,7 @@
 
 use bevy::{prelude::*, ui::FocusPolicy};
 
-pub fn div(c: &mut ChildBuilder, f: impl FnOnce(&mut ChildBuilder)) -> Entity {
-    div_impl(c, None, None, f)
-}
-
-pub fn div_with_style(
-    c: &mut ChildBuilder,
-    style: &Style,
-    f: impl FnOnce(&mut ChildBuilder),
-) -> Entity {
-    div_impl(c, None, Some(style.clone()), f)
-}
-
-pub fn div_color_with_style(
-    c: &mut ChildBuilder,
-    color: Color,
-    style: &Style,
-    f: impl FnOnce(&mut ChildBuilder),
-) -> Entity {
-    div_impl(c, Some(color), Some(style.clone()), f)
-}
-
-pub fn div_impl(
+pub fn container(
     c: &mut ChildBuilder,
     color: Option<Color>,
     style: Option<Style>,
@@ -44,7 +23,7 @@ pub fn div_impl(
     .id()
 }
 
-pub fn div_with_component(
+pub fn container_with_tag(
     c: &mut ChildBuilder,
     color: Option<Color>,
     style: Option<Style>,
@@ -66,13 +45,13 @@ pub fn button(c: &mut ChildBuilder, style: &Style, f: impl FnOnce(&mut ChildBuil
     button_impl(c, Some(style.clone()), None, EmptyComponent, f)
 }
 
-pub fn button_with_component(
+pub fn button_with_tag(
     c: &mut ChildBuilder,
     style: &Style,
-    component: impl Component,
+    tag: impl Component,
     f: impl FnOnce(&mut ChildBuilder),
 ) -> Entity {
-    button_impl(c, Some(style.clone()), None, component, f)
+    button_impl(c, Some(style.clone()), None, tag, f)
 }
 
 pub fn button_color(
@@ -91,7 +70,7 @@ pub fn button_impl(
     c: &mut ChildBuilder,
     style: Option<Style>,
     color: Option<Color>,
-    component: impl Component,
+    tag: impl Component,
     f: impl FnOnce(&mut ChildBuilder),
 ) -> Entity {
     c.spawn_bundle(ButtonBundle {
@@ -99,48 +78,38 @@ pub fn button_impl(
         style: style.unwrap_or_default(),
         ..Default::default()
     })
-    .insert(component)
+    .insert(tag)
     .with_children(f)
     .id()
 }
 
-pub fn text(c: &mut ChildBuilder, text_style: &TextStyle, text: impl Into<String>) {
-    text_with_style(c, &Style::default(), text_style, text)
-}
-
-pub fn text_with_style(
+pub fn text(
     c: &mut ChildBuilder,
-    style: &Style,
+    style: Option<Style>,
     text_style: &TextStyle,
     text: impl Into<String>,
-) {
-    div_with_style(c, style, |c| {
-        text_section(c, text_style, text);
-    });
-}
-
-pub fn text_section(c: &mut ChildBuilder, text_style: &TextStyle, text: impl Into<String>) {
-    c.spawn_bundle(TextBundle::from_section(text, text_style.clone()));
-}
-
-pub fn text_section_with_style(
-    c: &mut ChildBuilder,
-    style: &Style,
-    text_style: &TextStyle,
-    text: impl Into<String>,
-) {
-    c.spawn_bundle(TextBundle::from_section(text, text_style.clone()).with_style(style.clone()));
+) -> Entity {
+    container(c, None, style, |c| {
+        c.spawn_bundle(TextBundle::from_section(text, text_style.clone()));
+    })
 }
 
 pub fn text_sections(
     c: &mut ChildBuilder,
+    style: Option<Style>,
     sections: impl IntoIterator<Item = (TextStyle, String)>,
 ) {
-    c.spawn_bundle(TextBundle::from_sections(
-        sections
-            .into_iter()
-            .map(|(style, value)| TextSection::new(value, style)),
-    ));
+    c.spawn_bundle(TextBundle {
+        text: Text {
+            sections: sections
+                .into_iter()
+                .map(|(style, value)| TextSection::new(value, style))
+                .collect(),
+            ..default()
+        },
+        style: style.unwrap_or_default(),
+        ..default()
+    });
 }
 
 pub fn text_sections_with_style(

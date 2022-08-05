@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::primitives::{div, div_with_style, text_section, text_section_with_style};
+use super::primitives::{container, text};
 use crate::api::HackerNewsComment;
 
 pub fn comment(
@@ -20,15 +20,33 @@ pub fn comment(
         },
         ..default()
     };
-    let content_style = Style {
-        max_size: Size {
-            width: Val::Px(800.),
-            height: Val::Auto,
-        },
-        ..default()
-    };
-    div_with_style(c, &style, |c| {
-        let style = Style {
+    container(c, None, Some(style), |c| {
+        meta(c, meta_style, hn_comment);
+
+        content(c, text_style, hn_comment);
+
+        // sub comments
+        container(
+            c,
+            None,
+            Some(Style {
+                flex_direction: FlexDirection::ColumnReverse,
+                ..Default::default()
+            }),
+            |c| {
+                for sub_comment in &hn_comment.comments {
+                    comment(c, text_style, meta_style, sub_comment);
+                }
+            },
+        );
+    });
+}
+
+fn meta(c: &mut ChildBuilder, meta_style: &TextStyle, hn_comment: &HackerNewsComment) {
+    container(
+        c,
+        None,
+        Some(Style {
             // size: Size::new(Val::Undefined, Val::Px(24.)),
             // flex_shrink: 0.,
             align_items: AlignItems::FlexEnd,
@@ -38,38 +56,46 @@ pub fn comment(
                 ..default()
             },
             ..default()
-        };
-        div_with_style(c, &style, |c| {
-            text_section(
+        }),
+        |c| {
+            text(
                 c,
+                None,
                 meta_style,
-                format!("{} {}", hn_comment.user, hn_comment.time_ago),
+                format!(
+                    "{} {}",
+                    hn_comment.user.as_ref().unwrap_or(&String::from("")),
+                    hn_comment.time_ago
+                ),
             );
-        });
+        },
+    );
+}
 
-        div(c, |c| {
-            let parsed_content = hn_comment
-                .content
-                .replace("<p>", "\n\n")
-                .replace("</p>", "")
-                .replace("<i>", "")
-                .replace("</i>", "")
-                .replace("&quot;", "\"");
-            text_section_with_style(c, &content_style, text_style, parsed_content);
-        });
-
-        div_with_style(
+fn content(c: &mut ChildBuilder, text_style: &TextStyle, hn_comment: &HackerNewsComment) {
+    container(c, None, None, |c| {
+        let escaped_content = hn_comment
+            .content
+            .as_ref()
+            .map(|c| {
+                c.replace("<p>", "\n\n")
+                    .replace("</p>", "")
+                    .replace("<i>", "")
+                    .replace("</i>", "")
+                    .replace("&quot;", "\"")
+            })
+            .unwrap_or_else(|| String::from(""));
+        text(
             c,
-            &Style {
-                flex_direction: FlexDirection::ColumnReverse,
-                ..Default::default()
-            },
-            |c| {
-                //
-                for sub_comment in &hn_comment.comments {
-                    comment(c, text_style, meta_style, sub_comment);
-                }
-            },
+            Some(Style {
+                max_size: Size {
+                    width: Val::Px(800.),
+                    height: Val::Auto,
+                },
+                ..default()
+            }),
+            text_style,
+            escaped_content,
         );
     });
 }

@@ -12,7 +12,7 @@ use theme::*;
 use ui_components::{
     comment::comment,
     header::header,
-    primitives::{div, text_with_style},
+    primitives::{container, text},
     scrolling_list::scrolling_list,
     story::story,
     UiComponentsPlugin,
@@ -72,48 +72,51 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 fn spawn_nav(c: &mut ChildBuilder, asset_server: Res<AssetServer>) {
-    c.spawn_bundle(NodeBundle {
-        style: Style {
+    container(
+        c,
+        Some(BG_ORANGE_600),
+        Some(Style {
             justify_content: JustifyContent::SpaceBetween,
             ..default()
+        }),
+        |c| {
+            // nav
+            container(c, None, None, |c| {
+                let text_style = TextStyle {
+                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                    font_size: 24.0,
+                    color: Color::WHITE,
+                };
+
+                header(c, &text_style, "news", "Hacker News");
+                header(c, &text_style, "newest", "Newest");
+                header(c, &text_style, "show", "Show");
+                header(c, &text_style, "ask", "Ask");
+                header(c, &text_style, "jobs", "Jobs");
+            });
+
+            text(
+                c,
+                Some(Style {
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    padding: UiRect {
+                        left: Val::Px(10.),
+                        right: Val::Px(10.),
+                        ..default()
+                    },
+                    size: Size::new(Val::Auto, Val::Px(50.)),
+                    ..default()
+                }),
+                &TextStyle {
+                    font: asset_server.load("fonts/FiraMono-Medium.ttf"),
+                    font_size: 24.0,
+                    color: Color::WHITE,
+                },
+                "made with Bevy",
+            );
         },
-        color: BG_ORANGE_600.into(),
-        ..default()
-    })
-    .with_children(|c| {
-        // nav
-        div(c, |c| {
-            let text_style = TextStyle {
-                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                font_size: 24.0,
-                color: Color::WHITE,
-            };
-
-            header(c, &text_style, "news", "Hacker News");
-            header(c, &text_style, "newest", "Newest");
-            header(c, &text_style, "show", "Show");
-            header(c, &text_style, "ask", "Ask");
-            header(c, &text_style, "jobs", "Jobs");
-        });
-
-        let style = Style {
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            padding: UiRect {
-                left: Val::Px(10.),
-                right: Val::Px(10.),
-                ..default()
-            },
-            size: Size::new(Val::Auto, Val::Px(50.)),
-            ..default()
-        };
-        let text_style = TextStyle {
-            font: asset_server.load("fonts/FiraMono-Medium.ttf"),
-            font_size: 24.0,
-            color: Color::WHITE,
-        };
-        text_with_style(c, &style, &text_style, "made with Bevy");
-    });
+    );
 }
 
 #[derive(Component)]

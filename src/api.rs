@@ -34,11 +34,20 @@ pub struct HackerNewsStoryWithComments {
 
 #[derive(Debug, Deserialize)]
 pub struct HackerNewsComment {
-    pub user: String,
+    pub user: Option<String>,
     pub time_ago: String,
-    pub content: String,
+    pub content: Option<String>,
     pub comments: Vec<HackerNewsComment>,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct HackerNewsUser {
+    pub created: Number,
+    pub id: String,
+    pub karma: Number,
+}
+
+const BASE_URL: &str = "https://api.hackerwebapp.com";
 
 fn get(path: &str) -> anyhow::Result<ureq::Response> {
     info!("GET: {path}");
@@ -46,14 +55,19 @@ fn get(path: &str) -> anyhow::Result<ureq::Response> {
 }
 
 pub fn get_stories(r#type: &str) -> anyhow::Result<Vec<HackerNewsStory>> {
-    let response = get(&format!(
-        "https://node-hnapi.herokuapp.com/{}?page={}",
-        r#type, 0
-    ))?;
+    let response = get(&format!("{BASE_URL}/{}?page={}", r#type, 0))?;
     Ok(response.into_json()?)
 }
 
 pub fn get_story_comments(id: &str) -> anyhow::Result<HackerNewsStoryWithComments> {
-    let response = get(&format!("https://node-hnapi.herokuapp.com/item/{id}"))?;
+    let response = get(&format!("{BASE_URL}/item/{id}"))?;
+    Ok(response.into_json()?)
+}
+
+#[allow(unused)]
+pub fn get_user(id: &str) -> anyhow::Result<HackerNewsUser> {
+    let response = get(&format!(
+        "https://hacker-news.firebaseio.com/v0/user/${id}.json"
+    ))?;
     Ok(response.into_json()?)
 }
